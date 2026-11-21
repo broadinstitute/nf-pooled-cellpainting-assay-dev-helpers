@@ -1,0 +1,16 @@
+[workspace]
+authors = ["bethac07 <bcimini@broadinstitute.org>"]
+channels = ["conda-forge"]
+name = "nf-pooled-cellpainting-assay-dev-helpers"
+platforms = ["osx-arm64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+marimo = ">=0.25.1,<0.26"
+pandas = ">=3.1.1,<4"
+boto3 = ">=1.44.4,<2"
+pillow = ">=13.0.0,<14"
+numpy = ">=2.5.5,<3"
+obstore = ">=0.12.1,<0.13"
