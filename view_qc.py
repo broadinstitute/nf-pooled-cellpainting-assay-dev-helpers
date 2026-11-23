@@ -9,7 +9,7 @@
 
 import marimo
 
-__generated_with = "0.25.2"
+__generated_with = "0.25.1"
 app = marimo.App(width="medium")
 
 
@@ -142,9 +142,11 @@ def _(images_to_view):
 
 @app.cell
 def _(math, mo, textwrap):
-    def make_image_grid(list_of_images,size=400,textwidth=50,columns=False):
+    def make_image_grid(list_of_images,size=400,textwidth=50,columns=False,max_columns = False):
         if not columns:
             columns = round(len(list_of_images)**0.5)
+        if max_columns:
+            columns = min(columns, max_columns)
         rows = math.ceil(len(list_of_images)/columns)
         grid_image_dict = {x:mo.vstack([mo.md(f"""**{'\n'.join(textwrap.wrap(list_of_images[x],width=textwidth))}**"""),
                                         mo.image(list_of_images[x],width=size)]) for x in range(len(list_of_images))}
@@ -156,25 +158,31 @@ def _(math, mo, textwrap):
                     grid_col_list.append(grid_image_dict[row*columns+col])
             grid_row_list.append(mo.hstack(grid_col_list))
         return mo.vstack(grid_row_list)
-    
+
 
     return (make_image_grid,)
+
+
+@app.cell
+def _(paint_align):
+    paint_align
+    return
 
 
 @app.cell
 def _(alignment, make_image_grid):
     paint_align = [x for x in alignment if 'painting' in x]
     paint_align.sort()
-    paint_grid = make_image_grid(paint_align)
+    paint_grid = make_image_grid(paint_align, size = 350, max_columns = 4)
     paint_grid
-    return
+    return (paint_align,)
 
 
 @app.cell
 def _(alignment, make_image_grid):
     comb_align = [x for x in alignment if 'combined' in x]
     comb_align.sort()
-    comb_grid = make_image_grid(comb_align)
+    comb_grid = make_image_grid(comb_align, size = 350, max_columns=4)
     comb_grid
     return
 
@@ -213,7 +221,10 @@ def _(mo):
 def _(images_to_view, mo):
     seg = [x for x in images_to_view if 'segmentation' in x]
     if len(seg) > 0:
-        seg = mo.image(seg[0])
+        if len(seg) == 1:
+            seg = mo.image(seg[0])
+        else:
+            seg = mo.vstack([mo.image(x) for x in seg])
     else:
         seg = mo.md("Nothing with `segmentation` detected")
     seg
