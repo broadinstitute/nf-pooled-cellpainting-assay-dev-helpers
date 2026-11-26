@@ -63,6 +63,8 @@ def _(qc_folder_explorer):
 @app.cell
 def _(glob, plate, qc_folder_explorer):
     images_to_view = glob.glob(f"{qc_folder_explorer.value[0].path}/**/{plate.value}/*.png",recursive=True) + glob.glob(f"{qc_folder_explorer.value[0].path}/**/{plate.value}/**/*.png",recursive=True)
+    images_to_view = list(set(images_to_view))
+    images_to_view.sort()
     return (images_to_view,)
 
 
@@ -164,25 +166,26 @@ def _(math, mo, textwrap):
 
 
 @app.cell
-def _(paint_align):
-    paint_align
+def _(alignment, make_image_grid, mo):
+    paint_align = [x for x in alignment if 'painting' in x]
+    if len(paint_align) >0:
+        paint_align.sort()
+        paint_grid = mo.vstack([mo.md("### Phenotyping alignment"), make_image_grid(paint_align, size = 300, max_columns = 4)])
+        paint_grid
+    else:
+        paint_grid = mo.md("### No cross-phenotying arm dectected")
+    paint_grid
     return
 
 
 @app.cell
-def _(alignment, make_image_grid):
-    paint_align = [x for x in alignment if 'painting' in x]
-    paint_align.sort()
-    paint_grid = make_image_grid(paint_align, size = 350, max_columns = 4)
-    paint_grid
-    return (paint_align,)
-
-
-@app.cell
-def _(alignment, make_image_grid):
+def _(alignment, make_image_grid, mo):
     comb_align = [x for x in alignment if 'combined' in x]
-    comb_align.sort()
-    comb_grid = make_image_grid(comb_align, size = 350, max_columns=4)
+    if len(comb_align) >0:
+        comb_align.sort()
+        comb_grid = mo.vstack([mo.md("### Cross-arm alignment"), make_image_grid(comb_align, size = 250, textwidth = 30, max_columns=4)])
+    else:
+        comb_grid = mo.md("### No cross-arm alignment detected")
     comb_grid
     return
 
@@ -236,6 +239,28 @@ def _(mo):
     mo.md("""
     ## Barcode Calling
     """)
+    return
+
+
+@app.cell
+def _(images_to_view, mo):
+    shift = [x for x in images_to_view if 'shift' in x]
+    if len(shift) >0:
+        shift_graphs = []
+        x_shift =[x for x in shift if 'X_shift' in x]
+        if len(x_shift) >0:
+            shift_graphs.append(mo.md("**X shift graphs (for pipelines with re-align in step 13)**"))
+            for x in x_shift:
+                shift_graphs.append(mo.image(x))
+        y_shift =[x for x in shift if 'Y_shift' in x]
+        if len(y_shift) >0:
+            shift_graphs.append(mo.md("**Y shift graphs (for pipelines with re-align in step 13)**"))
+            for x in y_shift:
+                shift_graphs.append(mo.image(x))
+        shift_ui = mo.vstack(shift_graphs)
+    else:
+        shift_ui = mo.md("Not detecting any graphs from re-alignment in step 13")
+    shift_ui
     return
 
 
